@@ -15,9 +15,9 @@ class Task implements \JsonSerializable
 
     private ?\DateTimeInterface $dueDate;
 
-    private ?\DateTimeInterface $createdAt;
+    private \DateTimeInterface $createdAt;
 
-    private ?\DateTimeInterface $updatedAt;
+    private \DateTimeInterface $updatedAt;
 
     public function __construct(string $name, \DateTimeInterface $dueDate = null)
     {
@@ -26,22 +26,30 @@ class Task implements \JsonSerializable
         $this->dueDate = $dueDate;
 
         $this->status = new Opened();
+
+        $this->createdAt = $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function complete()
     {
         $this->status = $this->status->complete();
+
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function redo()
     {
         $this->status = $this->status->open();
+
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function edit(string $name, ?\DateTimeInterface $dueDate)
     {
         $this->name = $name;
         $this->dueDate = $dueDate;
+
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function jsonSerialize()
