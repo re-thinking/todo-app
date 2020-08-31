@@ -2,9 +2,9 @@
 
 namespace App\Todo\Application\Task;
 
-use App\Todo\Domain\Opened;
 use App\Todo\Domain\Repository\RepositoryInterface;
 use App\Todo\Domain\Service\Validation;
+use App\Todo\Domain\Task;
 
 class CreateTask
 {
@@ -27,7 +27,7 @@ class CreateTask
     {
         $this->validator->validate($name, $dueDate);
 
-        $task = new Opened($name, $dueDate);
+        $task = new Task($name, $dueDate);
 
         $this->repository->save($task);
 

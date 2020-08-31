@@ -78,8 +78,10 @@ class TaskController extends AbstractController
      */
     public function delete(int $id, DeleteTask $deleteTask)
     {
+        $deleteTask->handle($id);
+
         return new JsonResponse(
-            $deleteTask->handle($id),
+            null,
             JsonResponse::HTTP_NO_CONTENT
         );
     }

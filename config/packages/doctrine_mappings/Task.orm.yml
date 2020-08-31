@@ -1,13 +1,6 @@
 App\Todo\Domain\Task:
   type: entity
   table: tasks
-  inheritanceType: SINGLE_TABLE
-  discriminatorColumn:
-    name: status
-    type: string
-    discriminatorMap:
-      opened: Opened
-      completed: Completed
   id:
     id:
       type: integer
@@ -24,6 +17,9 @@ App\Todo\Domain\Task:
       length: 255
       options:
         fixed: false
+    status:
+      type: status
+      nullable: false
     dueDate:
       type: datetime
       nullable: true,

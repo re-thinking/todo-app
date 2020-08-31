@@ -2,46 +2,40 @@
 
 namespace App\Todo\Domain;
 
-abstract class Task implements \JsonSerializable
+use App\Todo\Domain\ValueObject\Opened;
+use App\Todo\Domain\ValueObject\Status;
+
+class Task implements \JsonSerializable
 {
-    const COMPLETED = 'completed';
-
-    const OPENED = 'opened';
-
-    const STATUS = self::OPENED;
-
-    private $id;
+    private ?int $id;
 
     private string $name;
 
+    private Status $status;
+
     private ?\DateTimeImmutable $dueDate;
 
-    private $createdAt;
+    private ?\DateTimeImmutable $createdAt;
 
-    private $updatedAt;
+    private ?\DateTimeImmutable $updatedAt;
 
     public function __construct(string $name, \DateTimeImmutable $dueDate = null)
     {
-        //todo: set status Opened
         $this->name = $name;
 
         $this->dueDate = $dueDate;
+
+        $this->status = new Opened();
     }
 
     public function complete()
     {
-        $completed = new Completed($this->name, $this->dueDate);
-        $completed->id = $this->id;
-
-        return $completed;
+        $this->status = $this->status->complete();
     }
 
     public function redo()
     {
-        $opened = new Opened($this->name, $this->dueDate);
-        $opened->id = $this->id;
-
-        return $opened;
+        $this->status = $this->status->open();
     }
 
     public function edit(string $name, ?\DateTimeImmutable $dueDate)
@@ -56,7 +50,7 @@ abstract class Task implements \JsonSerializable
             'id' => $this->id,
             'name' => $this->name,
             'due_date' => $this->dueDate ? $this->dueDate->format('Y-m-d H:i:s') : null,
-            'status' => static::STATUS
+            'status' => (string) $this->status
         ];
     }
 }

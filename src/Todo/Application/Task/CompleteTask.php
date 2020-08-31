@@ -21,8 +21,8 @@ class CompleteTask
     {
         $task = $this->repository->findOne($taskId);
 
-        $task = $task->complete();
-//        dd($task);
+        $task->complete();
+
         $this->repository->save($task);
 
         return $task;

@@ -21,7 +21,7 @@ class RedoTask
     {
         $task = $this->repository->findOne($taskId);
 
-        $task = $task->redo();
+        $task->redo();
 
         $this->repository->save($task);
 
