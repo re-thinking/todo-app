@@ -71,7 +71,7 @@ class TaskController extends AbstractController
     }
 
     /**
-     * @Route(name="task.show", methods={"GET"})
+     * @Route(name="task.show", path="/{id}", methods={"GET"})
      * @param  int  $id
      * @param  ShowTask  $showTask
      * @return JsonResponse

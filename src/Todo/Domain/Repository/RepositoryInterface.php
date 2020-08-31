@@ -12,9 +12,5 @@ interface RepositoryInterface
 
     public function save(Task $task): void;
 
-    public function findCompleted(): array;
-
-    public function findOpened(): array;
-
     public function destroy(int $id): void;
 }

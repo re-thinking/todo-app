@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Repository;
+namespace App\Todo\Infrastructure\Persistence\Repository;
 
+use App\Todo\Domain\Exceptions\TaskNotFoundException;
 use App\Todo\Domain\Repository\RepositoryInterface;
 use App\Todo\Domain\Task;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -36,7 +37,7 @@ class TaskRepository extends ServiceEntityRepository implements RepositoryInterf
         $task = $this->find($id);
 
         if ($task === null) {
-            throw new \Exception("Cannot find task with id $id");
+            throw new TaskNotFoundException("Task $id not found");
         }
 
         return $task;
@@ -56,30 +57,12 @@ class TaskRepository extends ServiceEntityRepository implements RepositoryInterf
         }
     }
 
-    public function findCompleted(): array
-    {
-        $query = $this->getEntityManager()
-            ->createQuery(<<<DQL
-                SELECT c FROM App\Todo\Domain\Completed c 
-            DQL);
-        return $query->getArrayResult();
-    }
-
-    public function findOpened(): array
-    {
-        $query = $this->getEntityManager()
-            ->createQuery(<<<DQL
-                SELECT c FROM App\Todo\Domain\Opened c 
-            DQL);
-        return $query->getArrayResult();
-    }
-
     public function destroy(int $id): void
     {
         $query = $this->getEntityManager()
             ->createQuery(<<<DQL
                 DELETE FROM App\Todo\Domain\Task t WHERE t.id = :id
-        DQL);
+            DQL);
         $query->setParameter(':id', $id);
         $query->execute();
     }
