@@ -13,13 +13,13 @@ class Task implements \JsonSerializable
 
     private Status $status;
 
-    private ?\DateTimeImmutable $dueDate;
+    private ?\DateTimeInterface $dueDate;
 
-    private ?\DateTimeImmutable $createdAt;
+    private ?\DateTimeInterface $createdAt;
 
-    private ?\DateTimeImmutable $updatedAt;
+    private ?\DateTimeInterface $updatedAt;
 
-    public function __construct(string $name, \DateTimeImmutable $dueDate = null)
+    public function __construct(string $name, \DateTimeInterface $dueDate = null)
     {
         $this->name = $name;
 
@@ -38,7 +38,7 @@ class Task implements \JsonSerializable
         $this->status = $this->status->open();
     }
 
-    public function edit(string $name, ?\DateTimeImmutable $dueDate)
+    public function edit(string $name, ?\DateTimeInterface $dueDate)
     {
         $this->name = $name;
         $this->dueDate = $dueDate;

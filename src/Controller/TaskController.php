@@ -5,9 +5,12 @@ namespace App\Controller;
 use App\Todo\Application\Task\CompleteTask;
 use App\Todo\Application\Task\CreateTask;
 use App\Todo\Application\Task\DeleteTask;
+use App\Todo\Application\Task\EditTask;
+use App\Todo\Application\Task\ListTasks;
 use App\Todo\Application\Task\RedoTask;
 use App\Todo\Application\Task\ShowTask;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,10 +24,12 @@ class TaskController extends AbstractController
 {
     /**
      * @Route(name="task.list", methods={"GET"})
+     * @param  ListTasks  $listTasks
+     * @return JsonResponse
      */
-    public function list()
+    public function list(ListTasks $listTasks)
     {
-        return new JsonResponse(['text' => 'Hello111']);
+        return new JsonResponse($listTasks->handle());
     }
 
     /**
@@ -37,6 +42,7 @@ class TaskController extends AbstractController
     public function create(Request $request, CreateTask $createTask)
     {
         $data = json_decode($request->getContent(), true);
+
         return new JsonResponse(
             $createTask->handle($data['name'], isset($data['due_date']) ? new \DateTimeImmutable($data['due_date']) : null),
             JsonResponse::HTTP_CREATED
@@ -81,6 +87,23 @@ class TaskController extends AbstractController
     {
         return new JsonResponse(
             $redoTask->handle($id),
+            JsonResponse::HTTP_ACCEPTED
+        );
+    }
+
+    /**
+     * @Route(name="task.edit", path="/{id}", methods={"PUT"})
+     * @param  int  $id
+     * @param  Request  $request
+     * @param  EditTask  $editTask
+     * @return JsonResponse
+     * @throws \Exception
+     */
+    public function edit(int $id, Request $request, EditTask $editTask)
+    {
+        $data = json_decode($request->getContent(), true);
+        return new JsonResponse(
+            $editTask->handle($id, $data['name'], isset($data['due_date']) ? new \DateTimeImmutable($data['due_date']) : null),
             JsonResponse::HTTP_ACCEPTED
         );
     }
