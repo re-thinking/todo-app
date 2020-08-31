@@ -13,6 +13,5 @@ framework:
                  type: fanout
                queue:
                  name: task_qu
-
         routing:
           'App\Messages\TaskMessage': async

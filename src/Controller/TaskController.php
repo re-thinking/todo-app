@@ -6,6 +6,7 @@ use App\Todo\Application\Task\CompleteTask;
 use App\Todo\Application\Task\CreateTask;
 use App\Todo\Application\Task\DeleteTask;
 use App\Todo\Application\Task\RedoTask;
+use App\Todo\Application\Task\ShowTask;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +22,7 @@ class TaskController extends AbstractController
     /**
      * @Route(name="task.list", methods={"GET"})
      */
-    public function findAll()
+    public function list()
     {
         return new JsonResponse(['text' => 'Hello111']);
     }
@@ -39,6 +40,20 @@ class TaskController extends AbstractController
         return new JsonResponse(
             $createTask->handle($data['name'], isset($data['due_date']) ? new \DateTimeImmutable($data['due_date']) : null),
             JsonResponse::HTTP_CREATED
+        );
+    }
+
+    /**
+     * @Route(name="task.show", methods={"GET"})
+     * @param  int  $id
+     * @param  ShowTask  $showTask
+     * @return JsonResponse
+     */
+    public function show(int $id, ShowTask $showTask)
+    {
+        return new JsonResponse(
+            $showTask->handle($id),
+            JsonResponse::HTTP_OK
         );
     }
 
