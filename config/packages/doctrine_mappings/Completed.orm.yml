@@ -1,0 +1,2 @@
+App\Todo\Domain\Completed:
+  type: entity

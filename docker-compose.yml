@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./:/app
+    environment:
+      PORT: "8080"
+      MESSAGE_BUS: "amqp://rabbitmq"
+    command: "php -S 0.0.0.0:8080 -t public/"
+    links:
+      - mysql
+      - rabbitmq
+  mysql:
+    image: mysql:8
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: "todo"
+      MYSQL_ROOT_PASSWORD: "root"
+  rabbitmq:
+    container_name: rabbitmq-management
+    image: rabbitmq:3-management
