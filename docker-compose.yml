@@ -12,6 +12,11 @@ services:
     environment:
       PORT: "8000"
       MESSAGE_BUS: "amqp://rabbitmq"
+      TASK_CREATED: "task_created_ex"
+      TASK_COMPLETED: "task_completed_ex"
+      TASK_REOPENED: "task_reopened_ex"
+      TASK_EDITED: "task_edited_ex"
+      TASK_DELETED: "task_deleted_ex"
     command: "php -S 0.0.0.0:8000 -t public/"
     links:
       - mysql
@@ -27,3 +32,5 @@ services:
   rabbitmq:
     container_name: rabbitmq-management
     image: rabbitmq:3-management
+    ports:
+    - "15672:15672"

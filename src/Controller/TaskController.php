@@ -2,6 +2,11 @@
 
 namespace App\Controller;
 
+use App\Messages\CompletedTaskMessage;
+use App\Messages\DeletedTaskMessage;
+use App\Messages\EditedTaskMessage;
+use App\Messages\NewTaskMessage;
+use App\Messages\ReopenedTaskMessage;
 use App\Todo\Application\Task\CompleteTask;
 use App\Todo\Application\Task\CreateTask;
 use App\Todo\Application\Task\DeleteTask;
@@ -10,9 +15,9 @@ use App\Todo\Application\Task\ListTasks;
 use App\Todo\Application\Task\RedoTask;
 use App\Todo\Application\Task\ShowTask;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -22,6 +27,17 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class TaskController extends AbstractController
 {
+    private MessageBusInterface $bus;
+
+    /**
+     * TaskController constructor.
+     * @param  MessageBusInterface  $bus
+     */
+    public function __construct(MessageBusInterface $bus)
+    {
+        $this->bus = $bus;
+    }
+
     /**
      * @Route(name="task.list", methods={"GET"})
      * @param  ListTasks  $listTasks
@@ -43,8 +59,13 @@ class TaskController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
+        $task = $createTask->handle($data['name'],
+            isset($data['due_date']) ? new \DateTimeImmutable($data['due_date']) : null);
+
+        $this->bus->dispatch(new NewTaskMessage($task->getId()));
+
         return new JsonResponse(
-            $createTask->handle($data['name'], isset($data['due_date']) ? new \DateTimeImmutable($data['due_date']) : null),
+            $task,
             JsonResponse::HTTP_CREATED
         );
     }
@@ -71,8 +92,12 @@ class TaskController extends AbstractController
      */
     public function complete(int $id, CompleteTask $completeTask)
     {
+        $task = $completeTask->handle($id);
+
+        $this->bus->dispatch(new CompletedTaskMessage($task->getId()));
+
         return new JsonResponse(
-            $completeTask->handle($id),
+            $task,
             JsonResponse::HTTP_ACCEPTED
         );
     }
@@ -85,8 +110,12 @@ class TaskController extends AbstractController
      */
     public function redo(int $id, RedoTask $redoTask)
     {
+        $task = $redoTask->handle($id);
+
+        $this->bus->dispatch(new ReopenedTaskMessage($task->getId()));
+
         return new JsonResponse(
-            $redoTask->handle($id),
+            $task,
             JsonResponse::HTTP_ACCEPTED
         );
     }
@@ -102,8 +131,13 @@ class TaskController extends AbstractController
     public function edit(int $id, Request $request, EditTask $editTask)
     {
         $data = json_decode($request->getContent(), true);
+        $task = $editTask->handle($id, $data['name'],
+            isset($data['due_date']) ? new \DateTimeImmutable($data['due_date']) : null);
+
+        $this->bus->dispatch(new EditedTaskMessage($task->getId()));
+
         return new JsonResponse(
-            $editTask->handle($id, $data['name'], isset($data['due_date']) ? new \DateTimeImmutable($data['due_date']) : null),
+            $task,
             JsonResponse::HTTP_ACCEPTED
         );
     }
@@ -117,6 +151,8 @@ class TaskController extends AbstractController
     public function delete(int $id, DeleteTask $deleteTask)
     {
         $deleteTask->handle($id);
+
+        $this->bus->dispatch(new DeletedTaskMessage($id));
 
         return new JsonResponse(
             null,

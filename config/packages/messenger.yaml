@@ -2,16 +2,41 @@ framework:
     messenger:
         # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
         # failure_transport: failed
-
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
-           async:
+           created:
              dsn: '%env(MESSAGE_BUS)%/%2f'
              options:
                exchange:
-                 name: task_ex
+                 name: '%env(TASK_CREATED)%'
                  type: fanout
-               queue:
-                 name: task_qu
+           completed:
+             dsn: '%env(MESSAGE_BUS)%/%2f'
+             options:
+               exchange:
+                 name: '%env(TASK_COMPLETED)%'
+                 type: fanout
+           reopened:
+             dsn: '%env(MESSAGE_BUS)%/%2f'
+             options:
+               exchange:
+                 name: '%env(TASK_REOPENED)%'
+                 type: fanout
+           edited:
+             dsn: '%env(MESSAGE_BUS)%/%2f'
+             options:
+               exchange:
+                 name: '%env(TASK_EDITED)%'
+                 type: fanout
+           deleted:
+             dsn: '%env(MESSAGE_BUS)%/%2f'
+             options:
+               exchange:
+                 name: '%env(TASK_DELETED)%'
+                 type: fanout
         routing:
-          'App\Messages\TaskMessage': async
+          'App\Messages\NewTaskMessage': created
+          'App\Messages\CompletedTaskMessage': completed
+          'App\Messages\ReopenedTaskMessage': reopened
+          'App\Messages\EditedTaskMessage': edited
+          'App\Messages\DeletedTaskMessage': deleted

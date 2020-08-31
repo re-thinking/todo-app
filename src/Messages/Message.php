@@ -2,14 +2,10 @@
 
 namespace App\Messages;
 
-class TaskMessage
+abstract class Message
 {
     private int $id;
 
-    /**
-     * TaskMessage constructor.
-     * @param  int  $id
-     */
     public function __construct(int $id)
     {
         $this->id = $id;

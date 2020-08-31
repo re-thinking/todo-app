@@ -53,4 +53,9 @@ class Task implements \JsonSerializable
             'status' => (string) $this->status
         ];
     }
+
+    public function getId()
+    {
+        return $this->id;
+    }
 }
