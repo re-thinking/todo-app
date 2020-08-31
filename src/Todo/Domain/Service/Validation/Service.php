@@ -9,7 +9,7 @@ class Service implements ServiceInterface
      */
     private array $validators = [];
 
-    public function validate(string $name, ?\DateTimeImmutable $dueDate = null): void
+    public function validate(string $name, ?\DateTimeInterface $dueDate = null): void
     {
         array_walk($this->validators, fn(Validator $validator) => $validator->validate($name, $dueDate));
     }

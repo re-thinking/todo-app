@@ -23,7 +23,7 @@ class CreateTask
         $this->validator = $validator;
     }
 
-    public function handle(string $name, ?\DateTimeImmutable $dueDate)
+    public function handle(string $name, ?\DateTimeInterface $dueDate)
     {
         $this->validator->validate($name, $dueDate);
 
