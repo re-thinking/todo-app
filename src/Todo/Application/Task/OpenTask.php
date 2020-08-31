@@ -4,7 +4,7 @@ namespace App\Todo\Application\Task;
 
 use App\Todo\Domain\Repository\RepositoryInterface;
 
-class RedoTask
+class OpenTask
 {
     private RepositoryInterface $repository;
 
@@ -21,7 +21,7 @@ class RedoTask
     {
         $task = $this->repository->findOne($taskId);
 
-        $task->redo();
+        $task->open();
 
         $this->repository->save($task);
 

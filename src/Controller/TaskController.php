@@ -12,7 +12,7 @@ use App\Todo\Application\Task\CreateTask;
 use App\Todo\Application\Task\DeleteTask;
 use App\Todo\Application\Task\EditTask;
 use App\Todo\Application\Task\ListTasks;
-use App\Todo\Application\Task\RedoTask;
+use App\Todo\Application\Task\OpenTask;
 use App\Todo\Application\Task\ShowTask;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -103,12 +103,12 @@ class TaskController extends AbstractController
     }
 
     /**
-     * @Route(name="task.redo", path="/{id}/complete", methods={"DELETE"})
+     * @Route(name="task.open", path="/{id}/complete", methods={"DELETE"})
      * @param  int  $id
-     * @param  RedoTask  $redoTask
+     * @param  OpenTask  $redoTask
      * @return JsonResponse
      */
-    public function redo(int $id, RedoTask $redoTask)
+    public function open(int $id, OpenTask $redoTask)
     {
         $task = $redoTask->handle($id);
 

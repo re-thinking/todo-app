@@ -13,7 +13,7 @@ class TaskTest extends TestCase
 
         $this->expectException(\LogicException::class);
 
-        $task->redo();
+        $task->open();
     }
 
     public function testItFailsOnTryingToCompleteAlreadyCompletedTask()

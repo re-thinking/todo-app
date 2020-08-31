@@ -37,7 +37,7 @@ class Task implements \JsonSerializable
         $this->updatedAt = new \DateTimeImmutable();
     }
 
-    public function redo()
+    public function open()
     {
         $this->status = $this->status->open();
 
