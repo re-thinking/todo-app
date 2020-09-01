@@ -7,15 +7,9 @@ use App\Messages\DeletedTaskMessage;
 use App\Messages\EditedTaskMessage;
 use App\Messages\NewTaskMessage;
 use App\Messages\ReopenedTaskMessage;
-use App\Todo\Application\Task\CompleteTask;
-use App\Todo\Application\Task\CreateTask;
-use App\Todo\Application\Task\DeleteTask;
-use App\Todo\Application\Task\EditTask;
-use App\Todo\Application\Task\ListTasks;
-use App\Todo\Application\Task\OpenTask;
-use App\Todo\Application\Task\ShowTask;
+use App\Todo\Application\Task\Command;
+use App\Todo\Application\Task\Query;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -31,33 +25,35 @@ class TaskController extends AbstractController
 {
     private MessageBusInterface $bus;
 
+    private Command $command;
+
     /**
      * TaskController constructor.
+     * @param  Command  $command
      * @param  MessageBusInterface  $bus
      */
-    public function __construct(MessageBusInterface $bus)
+    public function __construct(Command $command, MessageBusInterface $bus)
     {
         $this->bus = $bus;
+        $this->command = $command;
     }
 
     /**
      * @Route(name="task.list", methods={"GET"})
-     * @param  ListTasks  $listTasks
+     * @param  Query  $query
      * @return JsonResponse
      */
-    public function list(ListTasks $listTasks)
+    public function list(Query $query)
     {
-        return new JsonResponse($listTasks->handle());
+        return new JsonResponse($query->listTasks());
     }
 
     /**
      * @Route(name="task.create", methods={"POST"})
      * @param  Request  $request
-     * @param  CreateTask  $createTask
      * @return JsonResponse
-     * @throws \Exception
      */
-    public function create(Request $request, CreateTask $createTask)
+    public function create(Request $request)
     {
         $data = json_decode($request->getContent(), true);
 
@@ -79,7 +75,7 @@ class TaskController extends AbstractController
             }
         }
 
-        $task = $createTask->handle($name, $dueDate);
+        $task = $this->command->createTask($name, $dueDate);
 
         $this->bus->dispatch(new NewTaskMessage($task->getId()));
 
@@ -92,26 +88,25 @@ class TaskController extends AbstractController
     /**
      * @Route(name="task.show", path="/{id}", methods={"GET"})
      * @param  int  $id
-     * @param  ShowTask  $showTask
+     * @param  Query  $query
      * @return JsonResponse
      */
-    public function show(int $id, ShowTask $showTask)
+    public function show(int $id, Query $query)
     {
         return new JsonResponse(
-            $showTask->handle($id),
+            $query->showTask($id),
             JsonResponse::HTTP_OK
         );
     }
 
     /**
-     * @Route(name="task.complete", path="/{id}/complete", methods={"PUT"})
+     * @Route(name="task.complete", path="/{id}/completed", methods={"PUT"})
      * @param  int  $id
-     * @param  CompleteTask  $completeTask
      * @return JsonResponse
      */
-    public function complete(int $id, CompleteTask $completeTask)
+    public function complete(int $id)
     {
-        $task = $completeTask->handle($id);
+        $task = $this->command->completeTask($id);
 
         $this->bus->dispatch(new CompletedTaskMessage($task->getId()));
 
@@ -122,14 +117,13 @@ class TaskController extends AbstractController
     }
 
     /**
-     * @Route(name="task.open", path="/{id}/complete", methods={"DELETE"})
+     * @Route(name="task.open", path="/{id}/completed", methods={"DELETE"})
      * @param  int  $id
-     * @param  OpenTask  $redoTask
      * @return JsonResponse
      */
-    public function open(int $id, OpenTask $redoTask)
+    public function open(int $id)
     {
-        $task = $redoTask->handle($id);
+        $task = $this->command->openTask($id);
 
         $this->bus->dispatch(new ReopenedTaskMessage($task->getId()));
 
@@ -143,11 +137,9 @@ class TaskController extends AbstractController
      * @Route(name="task.edit", path="/{id}", methods={"PUT"})
      * @param  int  $id
      * @param  Request  $request
-     * @param  EditTask  $editTask
      * @return JsonResponse
-     * @throws \Exception
      */
-    public function edit(int $id, Request $request, EditTask $editTask)
+    public function edit(int $id, Request $request)
     {
         $data = json_decode($request->getContent(), true);
 
@@ -169,7 +161,7 @@ class TaskController extends AbstractController
             }
         }
 
-        $task = $editTask->handle($id, $name, $dueDate);
+        $task = $this->command->editTask($id, $name, $dueDate);
 
         $this->bus->dispatch(new EditedTaskMessage($task->getId()));
 
@@ -182,12 +174,11 @@ class TaskController extends AbstractController
     /**
      * @Route(name="task.delete", path="/{id}", methods={"DELETE"})
      * @param  int  $id
-     * @param  DeleteTask  $deleteTask
      * @return JsonResponse
      */
-    public function delete(int $id, DeleteTask $deleteTask)
+    public function delete(int $id)
     {
-        $deleteTask->handle($id);
+        $this->command->deleteTask($id);
 
         $this->bus->dispatch(new DeletedTaskMessage($id));
 

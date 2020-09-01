@@ -4,12 +4,12 @@ namespace App\Todo\Application\Task;
 
 use App\Todo\Domain\Repository\RepositoryInterface;
 
-class CompleteTask
+class Query
 {
     private RepositoryInterface $repository;
 
     /**
-     * CompleteTask constructor.
+     * Query constructor.
      * @param  RepositoryInterface  $repository
      */
     public function __construct(RepositoryInterface $repository)
@@ -17,14 +17,13 @@ class CompleteTask
         $this->repository = $repository;
     }
 
-    public function handle(int $taskId)
+    public function listTasks()
     {
-        $task = $this->repository->findOne($taskId);
+        return $this->repository->findAll();
+    }
 
-        $task->complete();
-
-        $this->repository->save($task);
-
-        return $task;
+    public function showTask(int $taskId)
+    {
+        return $this->repository->findOne($taskId);
     }
 }
