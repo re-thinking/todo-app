@@ -15,8 +15,10 @@ use App\Todo\Application\Task\ListTasks;
 use App\Todo\Application\Task\OpenTask;
 use App\Todo\Application\Task\ShowTask;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -59,8 +61,25 @@ class TaskController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        $task = $createTask->handle($data['name'],
-            isset($data['due_date']) ? new \DateTimeImmutable($data['due_date']) : null);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new BadRequestHttpException('Json is not well formed');
+        }
+
+        if (!isset($data['name'])) {
+            throw new BadRequestHttpException('Name is required field');
+        }
+
+        $name = $data['name'];
+        $dueDate = null;
+
+        if (isset($data['due_date'])) {
+            $dueDate = \DateTime::createFromFormat('Y-m-d', $data['due_date']);
+            if (!$dueDate) {
+                throw new BadRequestHttpException('Due date is not well formed');
+            }
+        }
+
+        $task = $createTask->handle($name, $dueDate);
 
         $this->bus->dispatch(new NewTaskMessage($task->getId()));
 
@@ -131,8 +150,26 @@ class TaskController extends AbstractController
     public function edit(int $id, Request $request, EditTask $editTask)
     {
         $data = json_decode($request->getContent(), true);
-        $task = $editTask->handle($id, $data['name'],
-            isset($data['due_date']) ? new \DateTimeImmutable($data['due_date']) : null);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new BadRequestHttpException('Json is not well formed');
+        }
+
+        if (!isset($data['name'])) {
+            throw new BadRequestHttpException('Name is required field');
+        }
+
+        $name = $data['name'];
+        $dueDate = null;
+
+        if (isset($data['due_date'])) {
+            $dueDate = \DateTime::createFromFormat('Y-m-d', $data['due_date']);
+            if (!$dueDate) {
+                throw new BadRequestHttpException('Due date is not well formed');
+            }
+        }
+
+        $task = $editTask->handle($id, $name, $dueDate);
 
         $this->bus->dispatch(new EditedTaskMessage($task->getId()));
 

@@ -7,6 +7,7 @@ use App\Todo\Domain\Exceptions\ValidationException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 class ExceptionSubscriber implements EventSubscriberInterface
@@ -21,14 +22,18 @@ class ExceptionSubscriber implements EventSubscriberInterface
 
         $response = new JsonResponse($message);
 
-        if ($exception instanceof ValidationException) {
-            $response->setStatusCode(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
-        } else if ($exception instanceof \LogicException) {
-            $response->setStatusCode(JsonResponse::HTTP_CONFLICT);
-        } else if ($exception instanceof TaskNotFoundException) {
-            $response->setStatusCode(JsonResponse::HTTP_NOT_FOUND);
+        if ($exception instanceof HttpExceptionInterface) {
+            $response->setStatusCode($exception->getStatusCode());
         } else {
-            $response->setStatusCode(JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            if ($exception instanceof ValidationException) {
+                $response->setStatusCode(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+            } else if ($exception instanceof \LogicException) {
+                $response->setStatusCode(JsonResponse::HTTP_CONFLICT);
+            } else if ($exception instanceof TaskNotFoundException) {
+                $response->setStatusCode(JsonResponse::HTTP_NOT_FOUND);
+            } else {
+                $response->setStatusCode(JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            }
         }
 
         $event->setResponse($response);
